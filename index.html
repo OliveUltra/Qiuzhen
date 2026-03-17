@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球震 QIUZHEN · 即时比分</title>
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="band-topbar">
+  <div class="inner topbar-inner">
+    <div class="tb-links">
+      <span class="tbl">足球资料库</span><span class="tbl">篮球资料库</span>
+      <span class="tbl">数据服务</span><span class="tbl">APP下载</span><span class="tbl">自媒体入驻</span>
+    </div>
+    <div class="tb-right">
+      <span class="live-pill"><span class="ldot"></span>在线 24,831 人</span>
+      <span id="current-date"></span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN NAV -->
+<nav class="band-nav">
+  <div class="inner nav-inner">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v4l2.5 1.5"/></svg>
+      </div>
+      <div><div class="logo-zh">球震</div><span class="logo-en">QIUZHEN</span></div>
+    </div>
+    <div class="nav-links">
+      <span class="nl on"  onclick="switchPage('home',this)">首页</span>
+      <span class="nl" onclick="switchPage('live',this)">即时比分</span>
+      <span class="nl" onclick="switchPage('odds',this)">赔率中心</span>
+      <span class="nl" onclick="switchPage('ai',this)">AI 预测<span class="nbadge">NEW</span></span>
+      <span class="nl" onclick="switchPage('community',this)">球吧社区</span>
+      <span class="nl" onclick="switchPage('data',this)">资料库</span>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search">
+        <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M11 11l3 3"/></svg>
+        <span>搜索球队、赛事...</span>
+      </div>
+      <button class="btn-vip">★ VIP 会员</button>
+      <span class="btn-login">登录</span>
+      <button class="btn-reg">免费注册</button>
+    </div>
+  </div>
+</nav>
+
+<!-- SPORT BAR -->
+<div class="band-sport">
+  <div class="inner sport-inner">
+    <div class="sb on">⚽ 足球</div>
+    <div class="sb">🏀 篮球</div>
+  </div>
+</div>
+
+<!-- NOTICE -->
+<div class="band-notice">
+  <div class="inner notice-inner">
+    <span class="nlabel">公告</span>
+    <span class="ntext">🎉 球震 AI 智能预测正式上线！&nbsp;｜&nbsp;德甲有奖竞猜活动进行中，100% 中奖！&nbsp;｜&nbsp;澳超/德乙/韩K联版权直播全程免费观看&nbsp;｜&nbsp;VIP 四大特权重磅升级</span>
+    <span class="nmore">查看全部 ›</span>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+  <div>
+
+    <!-- 首页 -->
+    <div class="page-section on" id="sec-home">
+      <div class="frow" id="fr">
+        <div class="fb on" onclick="fl(this,'all')">全部</div>
+        <div class="fb" onclick="fl(this,'英超')">英超</div>
+        <div class="fb" onclick="fl(this,'意甲')">意甲</div>
+        <div class="fb" onclick="fl(this,'德甲')">德甲</div>
+        <div class="fb" onclick="fl(this,'西甲')">西甲</div>
+        <div class="fb" onclick="fl(this,'法甲')">法甲</div>
+        <div class="fb" onclick="fl(this,'中超')">中超</div>
+        <div class="fb" onclick="fl(this,'葡超')">葡超</div>
+        <div class="fb" onclick="fl(this,'英足总杯')">英足总杯</div>
+        <div class="dgrp">
+          <div class="db on">今天</div><div class="db">明天</div><div class="db">后天</div>
+        </div>
+      </div>
+      <div id="ml"></div>
+    </div>
+
+    <!-- 即时比分 -->
+    <div class="page-section" id="sec-live">
+      <div class="live-header">
+        <div>
+          <div class="live-header-title"><span class="ldot"></span>即时比分直播</div>
+          <div class="live-header-sub">实时更新 · 全球500+联赛覆盖</div>
+        </div>
+        <div class="live-count">今日 47 场</div>
+      </div>
+      <div class="live-filter">
+        <div class="lf on">全部</div><div class="lf">直播中</div><div class="lf">英超</div>
+        <div class="lf">意甲</div><div class="lf">德甲</div><div class="lf">中超</div>
+        <div class="lf">CBA</div><div class="lf">NBA</div>
+      </div>
+      <div class="live-grid" id="live-grid"></div>
+    </div>
+
+    <!-- 赔率中心 -->
+    <div class="page-section" id="sec-odds">
+      <div class="sec-hd"><div class="sec-hd-bar"></div>欧洲赔率 · 今日热门场次</div>
+      <div style="background:var(--p0);border:1px solid var(--p1);border-radius:10px;overflow:hidden;margin-bottom:10px">
+        <div class="odds-hd-cols">
+          <div class="odds-hd-col">赛事</div><div class="odds-hd-col">主胜</div>
+          <div class="odds-hd-col">平局</div><div class="odds-hd-col">客胜</div>
+          <div class="odds-hd-col">亚盘</div><div class="odds-hd-col">大/小球</div>
+        </div>
+        <div id="odds-list"></div>
+      </div>
+      <div class="sec-hd" style="margin-top:20px"><div class="sec-hd-bar"></div>亚盘水位追踪</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:200px 1fr 1fr 1fr 1fr;gap:12px;padding:8px 18px;background:var(--p0);border-bottom:1px solid var(--p1)">
+          <div style="font-size:11px;font-weight:600;color:var(--p4)">赛事</div>
+          <div style="font-size:11px;font-weight:600;color:var(--p4);text-align:center">盘口</div>
+          <div style="font-size:11px;font-weight:600;color:var(--p4);text-align:center">主队水位</div>
+          <div style="font-size:11px;font-weight:600;color:var(--p4);text-align:center">客队水位</div>
+          <div style="font-size:11px;font-weight:600;color:var(--p4);text-align:center">走势</div>
+        </div>
+        <div id="asian-list"></div>
+      </div>
+    </div>
+
+    <!-- AI 预测 -->
+    <div class="page-section" id="sec-ai">
+      <div class="ai-hero-banner">
+        <div>
+          <div class="ai-hero-tag">BETA · 大数据模型</div>
+          <div class="ai-hero-title">球震 AI 预测引擎</div>
+          <div class="ai-hero-sub">融合赔率走势 · 历史交锋 · 球队状态 · 伤病情报，给出科学胜平负概率</div>
+        </div>
+        <div class="ai-hero-icon">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="10" stroke="#CECBF6" stroke-width="2"/>
+            <path d="M24 6v4M24 38v4M6 24h4M38 24h4M10.1 10.1l2.83 2.83M35.07 35.07l2.83 2.83M10.1 37.9l2.83-2.83M35.07 12.93l2.83-2.83" stroke="#AFA9EC" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ai-pick-bar">
+        <div class="ai-pick-label">选择预测场次</div>
+        <div class="ai-pick-row">
+          <select class="ai-sel">
+            <option>意甲 · AC米兰 vs 国际米兰（今天 03:45）</option>
+            <option>英超 · 布伦特福德 vs 狼队（今天 04:00）</option>
+            <option>德甲 · 圣保利 vs 法兰克福（今天 22:30）</option>
+            <option>中超 · 武汉三镇 vs 北京国安（今天 19:00）</option>
+          </select>
+          <button class="ai-run-btn" onclick="renderAI()">开始预测 →</button>
+        </div>
+      </div>
+      <div class="ai-result-grid" id="ai-result-grid"></div>
+      <div>
+        <div class="ai-sec-title"><div class="ai-sec-bar"></div>AI 近期命中记录</div>
+        <div class="ai-history-grid" id="ai-history"></div>
+      </div>
+    </div>
+
+    <!-- 球吧社区 -->
+    <div class="page-section" id="sec-community">
+      <div class="comm-topbar">
+        <div class="comm-tabs">
+          <span class="ctab on">推荐</span><span class="ctab">最新</span><span class="ctab">热榜</span>
+          <span class="ctab">英超</span><span class="ctab">意甲</span><span class="ctab">德甲</span>
+          <span class="ctab">中超</span><span class="ctab">NBA</span><span class="ctab">CBA</span>
+        </div>
+        <button class="comm-post-btn">+ 发布分析</button>
+      </div>
+      <div id="comm-list"></div>
+    </div>
+
+    <!-- 资料库 -->
+    <div class="page-section" id="sec-data">
+      <div class="data-tabs">
+        <span class="dtab on" onclick="switchDataTab(this,'football')">⚽ 足球资料库</span>
+        <span class="dtab" onclick="switchDataTab(this,'basketball')">🏀 篮球资料库</span>
+      </div>
+      <div id="data-football" class="data-section on">
+        <div class="data-league-grid" id="data-football-grid"></div>
+        <div class="data-sec-title" style="margin-top:20px"><div class="ai-sec-bar"></div>热门球队</div>
+        <div class="data-team-grid" id="data-team-grid"></div>
+      </div>
+      <div id="data-basketball" class="data-section">
+        <div class="data-league-grid" id="data-bball-grid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="side">
+    <div class="aib">
+      <div class="aib-ico">
+        <svg viewBox="0 0 24 24"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="aib-title">AI 智能预测 · 上线了</div>
+        <div class="aib-sub">大数据赔率模型，胜平负概率一键查</div>
+      </div>
+      <button class="aib-btn" onclick="switchPage('ai',document.querySelectorAll('.nl')[3])">立即体验 →</button>
+    </div>
+    <div class="sb2">
+      <div class="sbhd"><div class="sbhd-t"><div class="sbhd-bar"></div>篮球即时比分</div><span class="sbmore">更多 ›</span></div>
+      <div class="scr"><span class="scr-lg">NBA</span><span class="scr-nm">尼克斯 vs 勇士</span><span class="scr-sc">110-107</span><span style="font-size:11px;color:var(--text3)">完场</span></div>
+      <div class="scr"><span class="scr-lg">NBA</span><span class="scr-nm">骑士 vs 独行侠</span><span class="scr-sc">120-130</span><span style="font-size:11px;color:var(--text3)">完场</span></div>
+      <div class="scr"><span class="scr-lg">CBA</span><span class="scr-nm">上海久事 vs 青岛崂山</span><span class="scr-sc">89-82</span><div class="scr-lv"><span class="ldot" style="margin-right:4px;vertical-align:middle"></span>直播</div></div>
+      <div class="scr"><span class="scr-lg">CBA</span><span class="scr-nm">北京北汽 vs 天津先行者</span><span class="scr-sc">19:35</span><span style="font-size:11px;color:var(--text3)">未开</span></div>
+      <div class="scr"><span class="scr-lg">韩篮</span><span class="scr-nm">大邱飞马 vs 安养正官庄</span><span class="scr-sc">18:00</span><span style="font-size:11px;color:var(--text3)">未开</span></div>
+    </div>
+    <div class="sb2">
+      <div class="sbhd"><div class="sbhd-t"><div class="sbhd-bar"></div>中超积分榜</div><span class="sbmore">完整榜单 ›</span></div>
+      <div class="rkhd-row"><span style="min-width:16px;text-align:center">#</span><span style="flex:1">球队</span><span style="min-width:18px;text-align:center">胜</span><span style="min-width:18px;text-align:center">平</span><span style="min-width:18px;text-align:center">负</span><span style="min-width:28px;text-align:right">积分</span></div>
+      <div class="rkr"><span class="rkn tp">1</span><span class="rkt">上海申花</span><span class="rkw">8</span><span class="rkd2">0</span><span class="rkl">0</span><span class="rkp">24</span></div>
+      <div class="rkr"><span class="rkn tp">2</span><span class="rkt">山东泰山</span><span class="rkw">6</span><span class="rkd2">3</span><span class="rkl">0</span><span class="rkp">21</span></div>
+      <div class="rkr"><span class="rkn tp">3</span><span class="rkt">广州城</span><span class="rkw">5</span><span class="rkd2">2</span><span class="rkl">1</span><span class="rkp">17</span></div>
+      <div class="rkr"><span class="rkn">4</span><span class="rkt">北京国安</span><span class="rkw">4</span><span class="rkd2">3</span><span class="rkl">2</span><span class="rkp">15</span></div>
+      <div class="rkr"><span class="rkn">5</span><span class="rkt">武汉三镇</span><span class="rkw">4</span><span class="rkd2">2</span><span class="rkl">2</span><span class="rkp">14</span></div>
+      <div class="rkr"><span class="rkn">6</span><span class="rkt">浙江队</span><span class="rkw">3</span><span class="rkd2">3</span><span class="rkl">3</span><span class="rkp">12</span></div>
+    </div>
+    <div class="sb2">
+      <div class="sbhd"><div class="sbhd-t"><div class="sbhd-bar"></div>热门分析帖</div><span class="sbmore">球吧 ›</span></div>
+      <div class="htr"><div class="htc">英超</div><div class="htt">布伦特福德主场迎战狼队，能否稳固第七？</div><div class="htm"><span>足球狂想曲</span><span>2,341 阅读</span></div></div>
+      <div class="htr"><div class="htc">意甲</div><div class="htt">米兰德比：双雄激战欧冠资格，数据深度解析</div><div class="htm"><span>王牌一哥</span><span>1,987 阅读</span></div></div>
+      <div class="htr"><div class="htc">NBA</div><div class="htt">老鹰 vs 魔术——客场优势能否延续？</div><div class="htm"><span>外马尔侃球</span><span>1,562 阅读</span></div></div>
+      <div class="htr"><div class="htc">CBA</div><div class="htt">山东状态火热，浙江体能存疑，谁拿本场？</div><div class="htm"><span>爱因斯蛋</span><span>1,201 阅读</span></div></div>
+    </div>
+    <div class="vips">
+      <div><div class="vips-t">★ 升级球震 VIP</div><div class="vips-s">解锁 AI 预测 · 高清直播 · 深度数据</div></div>
+      <button class="vips-btn">查看方案</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="band-footer">
+  <div class="inner footer-inner">
+    <div class="flogo">
+      <div class="fmark"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v4l2.5 1.5"/></svg></div>
+      <span class="ftext">球震 QIUZHEN</span>
+    </div>
+    <div class="flinks">
+      <span class="flink">关于我们</span><span class="flink">合作联系</span>
+      <span class="flink">用户协议</span><span class="flink">隐私政策</span><span class="flink">免责声明</span>
+    </div>
+    <div class="fcopy">© 2026 球震体育 · 数据仅供参考，请理性看球</div>
+  </div>
+</div>
+
+<!-- 发帖弹窗 -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">发表看法</div>
+        <div class="modal-match-sub" id="modal-match-name">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label class="modal-label">你的名字</label>
+        <input class="modal-input" id="modal-username" placeholder="输入昵称（留空为匿名）" maxlength="20">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">你的预测</label>
+        <div class="modal-vote-row">
+          <div class="mvote" onclick="selectVote(this,'主胜')">🏠 主胜</div>
+          <div class="mvote" onclick="selectVote(this,'平局')">🤝 平局</div>
+          <div class="mvote" onclick="selectVote(this,'客胜')">✈️ 客胜</div>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">说说你的看法</label>
+        <textarea class="modal-textarea" id="modal-content" placeholder="分享你的分析思路、赔率走势、球队状态..." maxlength="200"></textarea>
+      </div>
+      <div class="modal-footer-row">
+        <span class="modal-hint" id="modal-char-count">0 / 200 字</span>
+        <button class="modal-submit" id="modal-submit-btn" onclick="submitPredict()">发布</button>
+      </div>
+      <div class="modal-toast" id="modal-toast">✓ 发布成功！感谢你的分享</div>
+    </div>
+  </div>
+</div>
+
+<!-- JS 入口（ES Module）-->
+<script type="module" src="js/app.js"></script>
+
+<!-- 当前日期 -->
+<script>
+  const days = ['日','一','二','三','四','五','六'];
+  const now  = new Date();
+  document.getElementById('current-date').textContent =
+    `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} 周${days[now.getDay()]}`;
+</script>
+
+</body>
+</html>
