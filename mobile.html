@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球震 - 比赛预测</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;
+  --bg2:#1e293b;
+  --bg3:#0f172a;
+  --card:#1e293b;
+  --card2:#273549;
+  --border:#334155;
+  --text:#f1f5f9;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --green:#22c55e;
+  --green-d:#16a34a;
+  --green-bg:rgba(34,197,94,.1);
+  --red:#ef4444;
+  --red-bg:rgba(239,68,68,.1);
+  --yellow:#f59e0b;
+  --yellow-bg:rgba(245,158,11,.1);
+  --purple:#7F77DD;
+  --purple-bg:rgba(127,119,221,.15);
+  --purple2:#534AB7;
+}
+
+body{background:var(--bg);color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;min-height:100vh}
+
+/* ── Header ── */
+.header{
+  background:#020617;
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+  height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:#fff}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+.header-right{display:flex;align-items:center;gap:8px}
+.live-badge{display:flex;align-items:center;gap:5px;background:rgba(239,68,68,.15);color:var(--red);
+  border:1px solid rgba(239,68,68,.3);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite}
+
+/* ── Filter Bar ── */
+.filter-bar{
+  background:#020617;
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+  display:flex;gap:0;overflow-x:auto;
+}
+.filter-bar::-webkit-scrollbar{display:none}
+.ft{padding:12px 14px;font-size:12px;color:var(--text3);cursor:pointer;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all .15s;font-weight:500;user-select:none}
+.ft:hover{color:var(--text2)}
+.ft.on{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+
+/* ── Stats Strip ── */
+.stats-strip{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  background:var(--bg2);border-bottom:1px solid var(--border);
+}
+.stat-item{padding:12px 16px;text-align:center;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-val{font-size:20px;font-weight:700;color:var(--green)}
+.stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;font-weight:500}
+
+/* ── Container ── */
+.container{padding:12px 12px 80px}
+
+/* ── Section Header ── */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin:8px 0 10px}
+.sec-title{font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:7px;letter-spacing:.5px}
+.sec-dot{width:3px;height:12px;background:var(--purple);border-radius:2px}
+.sec-count{font-size:11px;color:var(--text3)}
+
+/* ── Match Card ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:10px;
+  overflow:hidden;
+  transition:border-color .2s,transform .15s;
+  cursor:pointer;
+}
+.card:hover{border-color:var(--purple);transform:translateY(-1px)}
+.card:active{transform:translateY(0)}
+
+.card-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px 0;
+}
+.league-tag{
+  font-size:10px;font-weight:600;color:var(--purple);
+  background:var(--purple-bg);border:1px solid rgba(127,119,221,.25);
+  padding:2px 8px;border-radius:4px;
+}
+.card-time{font-size:11px;color:var(--text3)}
+.card-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.status-live{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.status-soon{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(127,119,221,.25)}
+.status-done{background:rgba(100,116,139,.1);color:var(--text3);border:1px solid rgba(100,116,139,.2)}
+
+.card-match{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;
+}
+.team{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+.team-av{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;border:1.5px solid var(--border);
+}
+.team-name{font-size:13px;font-weight:600;color:var(--text);text-align:center;line-height:1.3}
+.team-form{display:flex;gap:3px;margin-top:2px}
+.fd{width:15px;height:15px;border-radius:3px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.fw{background:rgba(34,197,94,.2);color:var(--green)}
+.fdw{background:rgba(245,158,11,.2);color:var(--yellow)}
+.fl{background:rgba(239,68,68,.2);color:var(--red)}
+
+.vs-block{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 12px}
+.vs-score{font-size:26px;font-weight:700;color:var(--purple);letter-spacing:4px;line-height:1}
+.vs-sep{font-size:13px;font-weight:600;color:var(--text3)}
+.vs-round{font-size:10px;color:var(--text3)}
+
+/* ── 预测条 ── */
+.card-predict{
+  margin:0 14px 12px;
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+}
+.predict-label{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:8px;letter-spacing:.5px}
+.predict-bars{display:flex;flex-direction:column;gap:6px}
+.pb-row{display:flex;align-items:center;gap:8px}
+.pb-name{font-size:11px;color:var(--text2);min-width:28px;font-weight:500}
+.pb-track{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.fill-win{background:var(--green)}
+.fill-draw{background:var(--yellow)}
+.fill-lose{background:var(--red)}
+.pb-pct{font-size:11px;font-weight:700;min-width:32px;text-align:right}
+.pct-win{color:var(--green)}.pct-draw{color:var(--yellow)}.pct-lose{color:var(--red)}
+
+/* ── 信心标签 ── */
+.confidence-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.conf-label{font-size:10px;color:var(--text3)}
+.conf-stars{display:flex;gap:2px}
+.star{font-size:11px}
+.conf-pct{font-size:12px;font-weight:700}
+
+/* ── 推荐标签 ── */
+.recommend-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;
+}
+.rec-win{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.rec-draw{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.rec-lose{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+
+/* ── 卡片底部 ── */
+.card-foot{
+  padding:8px 14px 10px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.odds-row{display:flex;gap:8px}
+.odd-item{text-align:center}
+.odd-val{font-size:13px;font-weight:700;color:var(--text)}
+.odd-lbl{font-size:9px;color:var(--text3);margin-top:1px}
+
+/* ── 空状态 ── */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px}
+
+/* ── Loading ── */
+.loading{display:flex;flex-direction:column;gap:10px}
+.sk{background:var(--card2);border-radius:12px;animation:sk 1.2s infinite}
+.sk-card{height:160px}
+@keyframes sk{0%,100%{opacity:.6}50%{opacity:.3}}
+
+/* ── 底部导航 ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#020617;border-top:1px solid var(--border);
+  display:flex;height:56px;z-index:100;
+}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;color:var(--text3);transition:color .15s;font-size:10px;font-weight:500}
+.bn.on{color:var(--green)}
+.bn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">
+    <div class="logo-dot"></div>
+    ⚽ 球震
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><span class="ldot"></span>直播中</div>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="filter-bar">
+  <div class="ft on" onclick="filterMatches('all',this)">全部</div>
+  <div class="ft" onclick="filterMatches('live',this)">🔴 直播</div>
+  <div class="ft" onclick="filterMatches('英超',this)">英超</div>
+  <div class="ft" onclick="filterMatches('意甲',this)">意甲</div>
+  <div class="ft" onclick="filterMatches('德甲',this)">德甲</div>
+  <div class="ft" onclick="filterMatches('西甲',this)">西甲</div>
+  <div class="ft" onclick="filterMatches('中超',this)">中超</div>
+  <div class="ft" onclick="filterMatches('NBA',this)">NBA</div>
+</div>
+
+<!-- Stats -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <div class="stat-val" id="stat-total">—</div>
+    <div class="stat-lbl">今日赛事</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" id="stat-live" style="color:var(--red)">—</div>
+    <div class="stat-lbl">直播中</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" id="stat-pred" style="color:var(--yellow)">—</div>
+    <div class="stat-lbl">有预测</div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="container">
+  <div class="sec-hd">
+    <div class="sec-title"><div class="sec-dot"></div>赛事预测</div>
+    <div class="sec-count" id="match-count"></div>
+  </div>
+  <!-- Loading skeleton -->
+  <div class="loading" id="loading">
+    <div class="sk sk-card"></div>
+    <div class="sk sk-card"></div>
+    <div class="sk sk-card"></div>
+  </div>
+  <div id="matchList" style="display:none"></div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="bn on">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    赛事
+  </div>
+  <div class="bn">
+    <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
+    赔率
+  </div>
+  <div class="bn">
+    <svg viewBox="0 0 24 24"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/><circle cx="12" cy="12" r="4"/></svg>
+    AI预测
+  </div>
+  <div class="bn">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    球吧
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ── Firebase 配置 ── */
+const firebaseConfig = {
+  apiKey:            "AIzaSyBjkd93pW2Kuv5mUFKdTSSZx3wH130cHrk",
+  authDomain:        "qiuzhen.firebaseapp.com",
+  projectId:         "qiuzhen",
+  storageBucket:     "qiuzhen.firebasestorage.app",
+  messagingSenderId: "347369779829",
+  appId:             "1:347369779829:web:8aff1183be87895b1cfe3c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+let allMatches = [];
+
+/* ── 工具 ── */
+const ini = n => n && n.length > 2 ? n.slice(0,2) : (n||'?');
+const fm  = {W:'fw',D:'fdw',L:'fl'};
+
+function confStars(pct){
+  const n = Math.round((pct||0) / 20);
+  return Array.from({length:5},(_,i)=>
+    `<span class="star" style="color:${i<n?'var(--yellow)':'var(--text3)'}">${i<n?'★':'☆'}</span>`
+  ).join('');
+}
+function confColor(pct){
+  if(pct>=80) return 'var(--green)';
+  if(pct>=60) return 'var(--yellow)';
+  return 'var(--red)';
+}
+function recTag(prediction){
+  const map = {主胜:'rec-win',平局:'rec-draw',客胜:'rec-lose'};
+  const cls = map[prediction]||'rec-win';
+  return prediction ? `<span class="recommend-tag ${cls}">推荐：${prediction}</span>` : '';
+}
+function statusBadge(status){
+  if(status==='直播中') return `<span class="card-status status-live">🔴 直播中</span>`;
+  if(status==='完场')   return `<span class="card-status status-done">完场</span>`;
+  return `<span class="card-status status-soon">${status||'未开赛'}</span>`;
+}
+
+/* ── 渲染单张卡片 ── */
+function renderCard(d){
+  const live  = d.status === '直播中';
+  const hf    = (d.hf||[]).map(f=>`<div class="fd ${fm[f]||''}">${f}</div>`).join('');
+  const af    = (d.af||[]).map(f=>`<div class="fd ${fm[f]||''}">${f}</div>`).join('');
+  const win   = d.winPct  || 45;
+  const draw  = d.drawPct || 28;
+  const lose  = 100 - win - draw;
+  const conf  = d.confidence || 0;
+
+  const center = live
+    ? `<div class="vs-score">${d.score||'0-0'}</div><div style="font-size:10px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:4px"><span class="ldot" style="width:5px;height:5px"></span>${d.minute||''}</div>`
+    : `<div class="vs-sep">VS</div><div class="vs-round">${d.round||''}</div>`;
+
+  const oddsBlock = (d.win||d.draw||d.lose) ? `
+    <div class="odds-row">
+      <div class="odd-item"><div class="odd-val">${d.win||'—'}</div><div class="odd-lbl">主胜</div></div>
+      <div class="odd-item"><div class="odd-val">${d.draw||'—'}</div><div class="odd-lbl">平局</div></div>
+      <div class="odd-item"><div class="odd-val">${d.lose||'—'}</div><div class="odd-lbl">客胜</div></div>
+    </div>` : '<div style="font-size:11px;color:var(--text3)">暂无赔率</div>';
+
+  return `
+  <div class="card">
+    <div class="card-top">
+      <span class="league-tag">${d.league||'—'}</span>
+      <div style="display:flex;align-items:center;gap:7px">
+        <span class="card-time">${d.time||''}</span>
+        ${statusBadge(d.status)}
+      </div>
+    </div>
+    <div class="card-match">
+      <div class="team">
+        <div class="team-av" style="background:${d.hc||'#334155'}22;border-color:${d.hc||'#334155'}55;color:${d.hc||'#94a3b8'}">${ini(d.home)}</div>
+        <div class="team-name">${d.home||'主队'}</div>
+        <div class="team-form">${hf}</div>
+      </div>
+      <div class="vs-block">${center}</div>
+      <div class="team">
+        <div class="team-av" style="background:${d.ac||'#334155'}22;border-color:${d.ac||'#334155'}55;color:${d.ac||'#94a3b8'}">${ini(d.away)}</div>
+        <div class="team-name">${d.away||'客队'}</div>
+        <div class="team-form">${af}</div>
+      </div>
+    </div>
+    ${d.prediction ? `
+    <div class="card-predict">
+      <div class="predict-label">AI 预测概率</div>
+      <div class="predict-bars">
+        <div class="pb-row">
+          <span class="pb-name">主胜</span>
+          <div class="pb-track"><div class="pb-fill fill-win" style="width:${win}%"></div></div>
+          <span class="pb-pct pct-win">${win}%</span>
+        </div>
+        <div class="pb-row">
+          <span class="pb-name">平局</span>
+          <div class="pb-track"><div class="pb-fill fill-draw" style="width:${draw}%"></div></div>
+          <span class="pb-pct pct-draw">${draw}%</span>
+        </div>
+        <div class="pb-row">
+          <span class="pb-name">客胜</span>
+          <div class="pb-track"><div class="pb-fill fill-lose" style="width:${lose}%"></div></div>
+          <span class="pb-pct pct-lose">${lose}%</span>
+        </div>
+      </div>
+      <div class="confidence-row">
+        <div>
+          <div class="conf-label">信心指数</div>
+          <div class="conf-stars">${confStars(conf)}</div>
+        </div>
+        <div style="text-align:right">
+          ${recTag(d.prediction)}
+          <div class="conf-pct" style="color:${confColor(conf)};margin-top:4px">${conf}%</div>
+        </div>
+      </div>
+    </div>` : ''}
+    <div class="card-foot">
+      ${oddsBlock}
+      <span style="font-size:11px;color:var(--text3)">${d.asian||''}</span>
+    </div>
+  </div>`;
+}
+
+/* ── 渲染列表 ── */
+function renderList(data){
+  const list  = document.getElementById('matchList');
+  const count = document.getElementById('match-count');
+  count.textContent = `${data.length} 场`;
+  if(!data.length){
+    list.innerHTML = `<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">暂无比赛数据</div></div>`;
+  } else {
+    list.innerHTML = data.map(renderCard).join('');
+  }
+}
+
+/* ── 筛选 ── */
+window.filterMatches = (type, el) => {
+  document.querySelectorAll('.ft').forEach(f=>f.classList.remove('on'));
+  el.classList.add('on');
+  if(type==='all')  renderList(allMatches);
+  else if(type==='live') renderList(allMatches.filter(m=>m.status==='直播中'));
+  else renderList(allMatches.filter(m=>m.league===type));
+};
+
+/* ── 加载数据 ── */
+async function loadMatches(){
+  const list    = document.getElementById('matchList');
+  const loading = document.getElementById('loading');
+  try {
+    const q    = query(collection(db,'matches'), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    allMatches = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // 统计
+    document.getElementById('stat-total').textContent = allMatches.length;
+    document.getElementById('stat-live').textContent  = allMatches.filter(m=>m.status==='直播中').length;
+    document.getElementById('stat-pred').textContent  = allMatches.filter(m=>m.prediction).length;
+
+    loading.style.display = 'none';
+    list.style.display    = 'block';
+    renderList(allMatches);
+  } catch(e){
+    console.error(e);
+    loading.style.display = 'none';
+    list.style.display    = 'block';
+    list.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败，请检查 Firebase 配置<br><span style="font-size:12px;color:var(--text3);margin-top:6px;display:block">${e.message}</span></div></div>`;
+  }
+}
+
+loadMatches();
+</script>
+</body>
+</html>
