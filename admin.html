@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>球震后台管理系统</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2f7;--bg2:#ffffff;--bg3:#f5f3fb;--card:#ffffff;--card2:#f5f3fb;
+  --border:#e4e2f0;--border2:#b8a8e8;
+  --text:#1a1630;--text2:#5a5480;--text3:#9890b8;
+  --p3:#5a3fa0;--p4:#4d3490;--p5:#3c2578;--p6:#2e1a60;--p7:#3c2578;
+  --g1:linear-gradient(135deg,#5a3fa0,#4d3490);
+  --green:#16a34a;--green-bg:#f0fdf4;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --gold:#d97706;--yellow:#d97706;
+  --sidebar:220px;
+}
+body{background:#f2f2f7;color:#1a1630;font-family:'PingFang SC','Microsoft YaHei',Arial,sans-serif;font-size:14px;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#f2f2f7}
+::-webkit-scrollbar-thumb{background:#b8a8e8;border-radius:2px}
+
+/* ── LOGIN ── */
+#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#f0eeff,#e8e0ff)}
+.login-box{background:#fff;border:1px solid #e4e2f0;border-radius:14px;padding:40px 36px;width:340px;box-shadow:0 8px 32px rgba(74,52,144,.12)}
+.login-logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:28px}
+.login-logo-icon{width:44px;height:44px;background:var(--g1);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(139,92,246,.4)}
+.login-logo-icon svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.login-title{font-size:18px;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.login-sub{font-size:11px;color:var(--text3);text-align:center;margin-top:2px}
+.login-lbl{font-size:11px;font-weight:700;color:#5a5480;display:block;margin-bottom:6px}
+.login-inp{width:100%;padding:11px 14px;background:#f5f3fb;border:1px solid #e4e2f0;border-radius:9px;font-size:14px;color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;margin-bottom:14px}
+.login-inp:focus{border-color:#5a3fa0}
+.login-inp::placeholder{color:#9890b8}
+.login-btn{width:100%;padding:12px;background:var(--g1);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(139,92,246,.35);transition:opacity .15s}
+.login-btn:hover{opacity:.9}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;text-align:center;min-height:18px}
+
+/* ── MAIN ── */
+#admin-app{display:none;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #e4e2f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sb-logo{padding:18px 16px;border-bottom:1px solid #e4e2f0;display:flex;align-items:center;gap:10px}
+.sb-logo-icon{width:36px;height:36px;background:var(--g1);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(139,92,246,.35)}
+.sb-logo-icon svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.sb-logo-zh{font-size:16px;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sb-logo-en{font-size:9px;color:var(--text3);letter-spacing:2px}
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto}
+.sb-group-lbl{font-size:10px;font-weight:700;color:#9890b8;padding:10px 16px 4px;letter-spacing:1.5px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:10px 16px;color:#5a5480;cursor:pointer;transition:all .15s;border-left:2px solid transparent;font-size:13px;user-select:none}
+.sb-item:hover{background:#f0eeff;color:#3c2578}
+.sb-item.on{background:#f0eeff;color:#3c2578;border-left-color:#5a3fa0;font-weight:600}
+.sb-item svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sb-badge{margin-left:auto;font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 6px;border-radius:10px;font-weight:700}
+.sb-foot{padding:14px 16px;border-top:1px solid #e4e2f0}
+.sb-logout{display:flex;align-items:center;gap:7px;color:#9890b8;font-size:12px;cursor:pointer;transition:color .15s}
+.sb-logout:hover{color:var(--red)}
+.sb-logout svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+
+/* MAIN AREA */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column}
+.topbar{height:54px;background:#fff;border-bottom:1px solid #e4e2f0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50;backdrop-filter:blur(10px)}
+.topbar-title{font-size:15px;font-weight:700;color:#1a1630}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tb-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#4d3490;background:#f0eeff;border:1px solid #d0c4ff;padding:4px 10px;border-radius:20px;font-weight:600}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.content{padding:22px 24px;flex:1;background:#f2f2f7}
+
+/* PAGE */
+.page{display:none}.page.on{display:block}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:#fff;border:1px solid #e4e2f0;border-radius:10px;padding:18px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(46,26,96,.06)}
+.stat-card::before{display:none}
+.stat-lbl{font-size:11px;font-weight:700;color:#9890b8;margin-bottom:10px;letter-spacing:.3px}
+.stat-num{font-size:28px;font-weight:900;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.stat-sub{font-size:11px;color:#9890b8;margin-top:5px}
+
+/* BOX */
+.box{background:#fff;border:1px solid #e4e2f0;border-radius:10px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 4px rgba(46,26,96,.06)}
+.box-hd{padding:14px 18px;border-bottom:1px solid #e4e2f0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f5f3fb}
+.box-hd h3{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.box-hd h3::before{content:'';width:2px;height:13px;background:var(--p5);border-radius:1px;flex-shrink:0}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:#9890b8;background:#f5f3fb;border-bottom:1px solid #e4e2f0;white-space:nowrap;letter-spacing:.3px}
+td{padding:11px 14px;border-bottom:1px solid #e4e2f0;font-size:13px;vertical-align:middle;color:#1a1630}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#faf9ff}
+.td-actions{display:flex;gap:6px}
+
+/* BUTTONS */
+button{cursor:pointer;font-family:inherit}
+.btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-grad{background:var(--g1);color:#fff;box-shadow:0 2px 8px rgba(139,92,246,.25)}.btn-grad:hover{opacity:.9}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(244,63,94,.2)}.btn-red:hover{background:rgba(244,63,94,.2)}
+.btn-ghost{background:#fff;color:#5a5480;border:1px solid #e4e2f0}.btn-ghost:hover{border-color:#b8a8e8;color:#3c2578}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,.2)}.btn-green:hover{background:rgba(16,185,129,.2)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field.full{grid-column:span 2}
+.fl{font-size:11px;font-weight:700;color:#5a5480}
+.fi{padding:9px 12px;border:1px solid #e4e2f0;border-radius:7px;font-size:13px;color:#1a1630;background:#f5f3fb;outline:none;transition:border-color .15s;font-family:inherit;width:100%}
+.fi:focus{border-color:#5a3fa0}
+.fi::placeholder{color:#9890b8}
+.fi-sel{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%236b5f94' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.form-divider{grid-column:span 2;font-size:11px;font-weight:700;color:#4d3490;padding-top:10px;border-top:1px solid var(--border);margin-top:2px;display:flex;align-items:center;gap:7px}
+.form-divider::before{content:'';width:2px;height:11px;background:var(--p5);border-radius:1px}
+
+/* MODAL */
+.modal-bd{display:none;position:fixed;inset:0;background:rgba(30,10,60,.45);z-index:400;align-items:center;justify-content:center}
+.modal-bd.open{display:flex}
+.modal-box{background:#fff;border:1px solid #e4e2f0;border-radius:12px;width:620px;max-width:94vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(99,102,241,.2)}
+.modal-hd{padding:16px 20px;border-bottom:1px solid #e4e2f0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.modal-ttl{font-size:15px;font-weight:700;color:#1a1630;display:flex;align-items:center;gap:8px}
+.modal-ttl::before{content:'';width:2px;height:14px;background:var(--p5);border-radius:1px}
+.modal-x{color:#9890b8;cursor:pointer;font-size:18px;background:none;border:none;line-height:1;transition:color .15s}
+.modal-x:hover{color:var(--text)}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1px solid #e4e2f0;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:#fff}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge-live{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
+.badge-soon{background:#f0eeff;color:#4d3490;border:1px solid #d0c4ff}
+.badge-done{background:#f5f5f5;color:#9890b8;border:1px solid #e4e2f0}
+
+/* PREDICTION CARDS */
+.pred-card{display:flex;gap:10px;padding:12px 18px;border-bottom:1px solid #e4e2f0}
+.pred-card:last-child{border-bottom:none}
+.pred-av{width:32px;height:32px;border-radius:50%;background:#f0eeff;border:1px solid #d0c4ff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--p3);flex-shrink:0}
+.pred-bd{flex:1;min-width:0}
+.pred-name{font-size:13px;font-weight:600;color:#1a1630;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pred-vtag{font-size:10px;background:#f0eeff;color:#4d3490;padding:1px 6px;border-radius:3px;font-weight:700}
+.pred-mtag{font-size:10px;background:#f5f3fb;color:#9890b8;padding:1px 6px;border-radius:3px}
+.pred-txt{font-size:12px;color:#5a5480;line-height:1.6;margin-bottom:5px}
+.pred-meta{font-size:11px;color:#9890b8;display:flex;gap:12px}
+
+/* NOTICE ITEMS */
+.notice-item{display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #e4e2f0}
+.notice-item:last-child{border-bottom:none}
+.notice-order{font-size:11px;color:#9890b8;min-width:24px;text-align:center;font-weight:700}
+.notice-text{flex:1;font-size:13px;color:#1a1630;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* LIVE PUSH */
+.live-push-card{background:#fff8f8;border:1px solid #fca5a5;border-radius:12px;padding:16px;margin-bottom:12px}
+.lp-match{font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.lp-form{display:flex;gap:10px;align-items:flex-end}
+.lp-form .fi{max-width:120px}
+.lp-minute{max-width:80px}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{background:#fff;border:1px solid #e4e2f0;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(46,26,96,.06)}
+.chart-title{font-size:13px;font-weight:700;color:#1a1630;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.chart-title::before{content:'';width:2px;height:13px;background:var(--p5);border-radius:1px;flex-shrink:0}
+.chart-wrap{position:relative;height:200px}
+
+/* TOAST */
+.toast-wrap{position:fixed;top:18px;right:22px;z-index:1000;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:#fff;border:1px solid #e4e2f0;border-radius:9px;padding:11px 15px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;gap:9px;pointer-events:all;animation:tfade .2s ease;min-width:200px}
+.toast.ok{border-left:3px solid var(--green)}
+.toast.err{border-left:3px solid var(--red)}
+@keyframes tfade{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.toast-ico{font-size:14px}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:40px;color:#9890b8;font-size:13px}
+.empty-state div{font-size:28px;margin-bottom:10px}
+
+/* NOTICE PREVIEW */
+.notice-preview{background:linear-gradient(90deg,#ede9fe,#f0eeff);border:1px solid #d0c4ff;border-radius:7px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l2.5 1.5"/></svg></div>
+      <div><div class="login-title">球震后台</div><div class="login-sub">ADMIN PANEL</div></div>
+    </div>
+    <label class="login-lbl">用户名</label>
+    <input class="login-inp" type="text" id="user-inp" placeholder="输入管理员用户名" onkeydown="if(event.key==='Enter')document.getElementById('pw-inp').focus()">
+    <label class="login-lbl">密码</label>
+    <input class="login-inp" type="password" id="pw-inp" placeholder="输入密码" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">进入后台</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l2.5 1.5"/></svg></div>
+        <div><div class="sb-logo-zh">球震</div><div class="sb-logo-en">ADMIN</div></div>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-group-lbl">概览</div>
+        <div class="sb-item on" onclick="nav('dashboard',this)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>数据概览
+        </div>
+        <div class="sb-group-lbl">内容管理</div>
+        <div class="sb-item" onclick="nav('matches',this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>足球赛事
+        </div>
+        <div class="sb-item" onclick="nav('basketball',this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18M3 12h18M12 3c3 4 3 11 0 18M12 3c-3 4-3 11 0 18"/></svg>篮球赛事
+        </div>
+        <div class="sb-item" onclick="nav('live',this)">
+          <svg viewBox="0 0 24 24"><path d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/></svg>直播比分推送
+          <span class="sb-badge" id="live-badge">0</span>
+        </div>
+        <div class="sb-item" onclick="nav('odds',this)">
+          <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>赔率管理
+        </div>
+        <div class="sb-item" onclick="nav('notices',this)">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>公告管理
+        </div>
+        <div class="sb-group-lbl">社区</div>
+        <div class="sb-item" onclick="nav('predictions',this)">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>观点审核
+          <span class="sb-badge" id="pred-badge">0</span>
+        </div>
+        <div class="sb-item" onclick="nav('stats',this)">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>数据统计
+        </div>
+      </div>
+      <div class="sb-foot">
+        <div class="sb-logout" onclick="doLogout()">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>退出登录
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title" id="topbar-title">数据概览</div>
+        <div class="topbar-right">
+          <div class="tb-badge"><div class="tb-dot"></div>Firebase 实时连接</div>
+          <div class="tb-badge" style="color:#4d3490">👤 <span id="admin-name-badge">管理员</span></div>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- 数据概览 -->
+        <div class="page on" id="pg-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-lbl">足球赛事</div><div class="stat-num" id="s-football">—</div><div class="stat-sub">场</div></div>
+            <div class="stat-card"><div class="stat-lbl">篮球赛事</div><div class="stat-num" id="s-basketball">—</div><div class="stat-sub">场</div></div>
+            <div class="stat-card"><div class="stat-lbl">球迷观点</div><div class="stat-num" id="s-preds">—</div><div class="stat-sub">条</div></div>
+            <div class="stat-card"><div class="stat-lbl">活跃公告</div><div class="stat-num" id="s-notices">—</div><div class="stat-sub">条</div></div>
+          </div>
+          <div class="box">
+            <div class="box-hd"><h3>近期足球赛事</h3><button class="btn btn-grad btn-sm" onclick="nav('matches',document.querySelector('.sb-item:nth-child(3)'))">+ 添加赛事</button></div>
+            <table><thead><tr><th>联赛</th><th>主队 vs 客队</th><th>时间</th><th>状态</th><th>推荐</th><th>操作</th></tr></thead>
+            <tbody id="dash-table"><tr><td colspan="6" class="empty-state">加载中...</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 足球赛事 -->
+        <div class="page" id="pg-matches">
+          <div class="box">
+            <div class="box-hd"><h3>足球赛事管理</h3><button class="btn btn-grad btn-sm" onclick="openMatchModal('football')">+ 添加足球赛事</button></div>
+            <table><thead><tr><th>联赛</th><th>主队 vs 客队</th><th>比分</th><th>时间</th><th>状态</th><th>推荐</th><th>信心</th><th>操作</th></tr></thead>
+            <tbody id="football-tbody"><tr><td colspan="8" class="empty-state"><div>⚽</div>暂无足球赛事</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 篮球赛事 -->
+        <div class="page" id="pg-basketball">
+          <div class="box">
+            <div class="box-hd"><h3>篮球赛事管理</h3><button class="btn btn-grad btn-sm" onclick="openMatchModal('basketball')">+ 添加篮球赛事</button></div>
+            <table><thead><tr><th>联赛</th><th>主队 vs 客队</th><th>比分</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="basketball-tbody"><tr><td colspan="6" class="empty-state"><div>🏀</div>暂无篮球赛事</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 直播比分推送 -->
+        <div class="page" id="pg-live">
+          <div class="box" style="margin-bottom:16px">
+            <div class="box-hd"><h3>🔴 直播比分实时推送</h3><span style="font-size:12px;color:var(--text3)">更新后前台立即刷新</span></div>
+            <div style="padding:16px" id="live-push-list"><div class="empty-state"><div>🔴</div>暂无直播赛事，请先在赛事管理中将状态设为「直播中」</div></div>
+          </div>
+        </div>
+
+        <!-- 赔率管理 -->
+        <div class="page" id="pg-odds">
+          <div class="box">
+            <div class="box-hd"><h3>赔率数据管理</h3><button class="btn btn-grad btn-sm" onclick="openOddsModal()">+ 添加赔率</button></div>
+            <table><thead><tr><th>赛事</th><th>联赛</th><th>主胜</th><th>平局</th><th>客胜</th><th>亚盘</th><th>大/小球</th><th>操作</th></tr></thead>
+            <tbody id="odds-tbody"><tr><td colspan="8" class="empty-state"><div>📊</div>暂无赔率数据</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 公告管理 -->
+        <div class="page" id="pg-notices">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="box">
+              <div class="box-hd"><h3>公告列表</h3><button class="btn btn-grad btn-sm" onclick="openNoticeModal()">+ 新增公告</button></div>
+              <div id="notice-list"><div class="empty-state"><div>🔔</div>暂无公告</div></div>
+            </div>
+            <div class="box">
+              <div class="box-hd"><h3>前台实时预览</h3></div>
+              <div style="padding:16px">
+                <div class="notice-preview">
+                  <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">公告</span>
+                  <span style="font-size:12px;color:var(--p3);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" id="notice-preview-txt">暂无公告内容</span>
+                  <span style="font-size:11px;color:var(--p5);white-space:nowrap;flex-shrink:0">查看全部 ›</span>
+                </div>
+                <p style="font-size:11px;color:var(--text3);margin-top:10px">↑ 前台公告栏实时效果</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 观点审核 -->
+        <div class="page" id="pg-predictions">
+          <div class="box">
+            <div class="box-hd">
+              <h3>球迷观点审核</h3>
+              <div style="display:flex;align-items:center;gap:8px">
+                <select id="pred-filter" onchange="loadPredictions()" class="fi" style="width:180px;padding:5px 10px;font-size:12px">
+                  <option value="">全部赛事</option>
+                </select>
+                <span style="font-size:12px;color:var(--text3)" id="pred-total"></span>
+              </div>
+            </div>
+            <div id="pred-list"><div class="empty-state"><div>💬</div>暂无观点数据</div></div>
+          </div>
+        </div>
+
+        <!-- 数据统计 -->
+        <div class="page" id="pg-stats">
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">近7天球迷观点数量</div>
+              <div class="chart-wrap"><canvas id="chart-preds"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">赛事状态分布</div>
+              <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+            </div>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">联赛赛事分布</div>
+              <div class="chart-wrap"><canvas id="chart-leagues"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">AI 推荐分布</div>
+              <div class="chart-wrap"><canvas id="chart-predictions"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- 赛事弹窗（足球/篮球通用）-->
+<div class="modal-bd" id="modal-match" onclick="closeMod('modal-match',event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-ttl" id="match-modal-title">添加赛事</div>
+      <button class="modal-x" onclick="closeMod('modal-match')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field"><label class="fl">联赛名称</label><input class="fi" id="m-league" placeholder="如：英超、NBA、CBA"></div>
+        <div class="form-field"><label class="fl">轮次 / 场次</label><input class="fi" id="m-round" placeholder="如：第30轮、常规赛第42场"></div>
+        <div class="form-field"><label class="fl">主队</label><input class="fi" id="m-home" placeholder="主队名称"></div>
+        <div class="form-field"><label class="fl">客队</label><input class="fi" id="m-away" placeholder="客队名称"></div>
+        <div class="form-field full" style="grid-column:span 2">
+  <label class="fl">比赛日期 &amp; 时间</label>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <input class="fi" type="date" id="m-date" style="width:155px;cursor:pointer">
+    <input class="fi" type="time" id="m-time-pick" style="width:120px;cursor:pointer">
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button type="button" onclick="setQuickDateTime(0,'19:00')" class="btn btn-ghost btn-sm">今天 19:00</button>
+      <button type="button" onclick="setQuickDateTime(0,'21:00')" class="btn btn-ghost btn-sm">今天 21:00</button>
+      <button type="button" onclick="setQuickDateTime(1,'04:00')" class="btn btn-ghost btn-sm">明天 04:00</button>
+      <button type="button" onclick="setQuickDateTime(1,'19:00')" class="btn btn-ghost btn-sm">明天 19:00</button>
+    </div>
+  </div>
+  <input type="hidden" id="m-time">
+</div>
+        <div class="form-field"><label class="fl">状态</label>
+          <select class="fi fi-sel" id="m-status">
+            <option value="未开赛">未开赛</option><option value="直播中">直播中</option><option value="完场">完场</option>
+          </select>
+        </div>
+        <div class="form-field"><label class="fl">比分（直播/完场填写）</label><input class="fi" id="m-score" placeholder="如：1-0 或 102-98"></div>
+        <div class="form-field"><label class="fl">直播分钟数</label><input class="fi" id="m-minute" type="number" placeholder="如：64（直播时填）"></div>
+        <div class="form-field"><label class="fl">主队颜色</label><input class="fi" type="color" id="m-hc" value="#8b5cf6" style="height:40px;cursor:pointer"></div>
+        <div class="form-field"><label class="fl">客队颜色</label><input class="fi" type="color" id="m-ac" value="#3b82f6" style="height:40px;cursor:pointer"></div>
+        <div class="form-field" id="form-hf-wrap"><label class="fl">主队近况（W D L 空格分隔）</label><input class="fi" id="m-hf" placeholder="如：W W D L W"></div>
+        <div class="form-field" id="form-af-wrap"><label class="fl">客队近况（W D L 空格分隔）</label><input class="fi" id="m-af" placeholder="如：W D W L W"></div>
+        <div class="form-divider" id="ai-section-label">📊 AI 预测数据（选填）</div>
+        <div class="form-field" id="form-pred-wrap"><label class="fl">推荐方向</label>
+          <select class="fi fi-sel" id="m-prediction">
+            <option value="">不填写</option><option value="主胜">主胜</option><option value="平局">平局</option><option value="客胜">客胜</option>
+          </select>
+        </div>
+        <div class="form-field"><label class="fl">AI 信心指数（0–100）</label><input class="fi" id="m-confidence" type="number" min="0" max="100" placeholder="如：75"></div>
+        <div class="form-field"><label class="fl">主胜概率 %</label><input class="fi" id="m-winPct" type="number" min="0" max="100" placeholder="如：45"></div>
+        <div class="form-field"><label class="fl">平局概率 %（客胜自动算）</label><input class="fi" id="m-drawPct" type="number" min="0" max="100" placeholder="如：28"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeMod('modal-match')">取消</button>
+      <button class="btn btn-grad" onclick="saveMatch()">✓ 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 赔率弹窗 -->
+<div class="modal-bd" id="modal-odds" onclick="closeMod('modal-odds',event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-ttl" id="odds-modal-title">添加赔率</div>
+      <button class="modal-x" onclick="closeMod('modal-odds')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field"><label class="fl">主队</label><input class="fi" id="o-home" placeholder="主队名称"></div>
+        <div class="form-field"><label class="fl">客队</label><input class="fi" id="o-away" placeholder="客队名称"></div>
+        <div class="form-field"><label class="fl">联赛</label><input class="fi" id="o-league" placeholder="如：英超"></div>
+        <div class="form-field"><label class="fl">时间/状态</label><input class="fi" id="o-time" placeholder="如：04:00 或 直播中"></div>
+        <div class="form-field"><label class="fl">主胜赔率</label><input class="fi" id="o-win" type="number" step="0.01" placeholder="如：1.95"></div>
+        <div class="form-field"><label class="fl">平局赔率</label><input class="fi" id="o-draw" type="number" step="0.01" placeholder="如：3.40"></div>
+        <div class="form-field"><label class="fl">客胜赔率</label><input class="fi" id="o-lose" type="number" step="0.01" placeholder="如：3.80"></div>
+        <div class="form-field"><label class="fl">亚盘</label><input class="fi" id="o-asian" placeholder="如：平手、主让半"></div>
+        <div class="form-field"><label class="fl">大小球</label><input class="fi" id="o-ou" placeholder="如：2.5球"></div>
+        <div class="form-field"><label class="fl">主胜走势</label>
+          <select class="fi fi-sel" id="o-wchg">
+            <option value="flat">— 无变化</option><option value="up">↑ 上涨</option><option value="dn">↓ 下降</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeMod('modal-odds')">取消</button>
+      <button class="btn btn-grad" onclick="saveOdds()">✓ 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 公告弹窗 -->
+<div class="modal-bd" id="modal-notice" onclick="closeMod('modal-notice',event)">
+  <div class="modal-box" style="width:460px" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-ttl" id="notice-modal-title">新增公告</div>
+      <button class="modal-x" onclick="closeMod('modal-notice')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr">
+        <div class="form-field"><label class="fl">公告内容</label><input class="fi" id="n-text" placeholder="输入公告文字，多条用 ｜ 分隔"></div>
+        <div class="form-field"><label class="fl">排序（数字越小越靠前）</label><input class="fi" id="n-order" type="number" value="0"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeMod('modal-notice')">取消</button>
+      <button class="btn btn-grad" onclick="saveNotice()">✓ 发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, doc,
+  updateDoc, deleteDoc, query, orderBy, where,
+  limit, serverTimestamp, onSnapshot
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const db = getFirestore(initializeApp({
+  apiKey:"AIzaSyBjkd93pW2Kuv5mUFKdTSSZx3wH130cHrk",
+  authDomain:"qiuzhen.firebaseapp.com",
+  projectId:"qiuzhen",
+  storageBucket:"qiuzhen.firebasestorage.app",
+  messagingSenderId:"347369779829",
+  appId:"1:347369779829:web:8aff1183be87895b1cfe3c"
+}));
+
+const g = id => document.getElementById(id)?.value ?? '';
+const sv = (id,v) => { const el=document.getElementById(id); if(el) el.value = v??''; };
+function fmtTs(ts){if(!ts)return'—';const d=ts.toDate?ts.toDate():new Date(ts);return`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+
+/* ── toast ── */
+function toast(msg,type='ok'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span class="toast-ico">${type==='ok'?'✓':'✕'}</span><span>${msg}</span>`;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>el.remove(),2800);
+}
+window.toast=toast;
+
+/* ════ MATCHES ════ */
+let _M=[], _BM=[], _editMatchId=null, _matchType='football';
+
+async function loadMatches(){
+  const snap=await getDocs(query(collection(db,'matches'),orderBy('createdAt','desc')));
+  const all=snap.docs.map(d=>({id:d.id,...d.data()}));
+  _M=all.filter(m=>m.sport!=='basketball');
+  _BM=all.filter(m=>m.sport==='basketball');
+
+  document.getElementById('s-football').textContent=_M.length;
+  document.getElementById('s-basketball').textContent=_BM.length;
+  document.getElementById('live-badge').textContent=all.filter(m=>m.status==='直播中').length;
+
+  // update pred filter
+  const sel=document.getElementById('pred-filter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">全部赛事</option>'+all.map(m=>`<option value="${m.id}">${m.home||''} vs ${m.away||''}</option>`).join('');
+  if(cur)sel.value=cur;
+
+  renderMatchTable(_M,'football-tbody');
+  renderMatchTable(_BM,'basketball-tbody');
+  renderDashTable();
+  renderLivePush(all.filter(m=>m.status==='直播中'));
+}
+
+function renderMatchTable(data,tbodyId){
+  const bc=s=>s==='直播中'?'badge-live':s==='未开赛'?'badge-soon':'badge-done';
+  const tbody=document.getElementById(tbodyId);
+  if(!data.length){tbody.innerHTML=`<tr><td colspan="8" class="empty-state"><div>📭</div>暂无数据</td></tr>`;return;}
+  tbody.innerHTML=data.map(m=>`
+    <tr>
+      <td><span style="font-size:10px;background:rgba(139,92,246,.1);color:var(--p3);padding:2px 7px;border-radius:3px;font-weight:700">${m.league||'—'}</span></td>
+      <td style="font-weight:600">${m.home||'—'} <span style="color:var(--text3);font-weight:400">vs</span> ${m.away||'—'}</td>
+      <td style="font-weight:700;color:var(--p4)">${m.score||'—'}</td>
+      <td style="color:var(--text2)">${m.time||'—'}</td>
+      <td><span class="badge ${bc(m.status)}">${m.status||'—'}</span></td>
+      <td>${m.prediction?`<span style="color:var(--green);font-weight:700">${m.prediction}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${m.confidence?`<b>${m.confidence}%</b>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editMatchById('${m.id}')">编辑</button>
+        <button class="btn btn-red btn-sm" onclick="deleteMatchById('${m.id}','${(m.home||'').replace(/'/g,"\\'")} vs ${(m.away||'').replace(/'/g,"\\'")}')">删除</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderDashTable(){
+  const all=[..._M,..._BM].slice(0,6);
+  const bc=s=>s==='直播中'?'badge-live':s==='未开赛'?'badge-soon':'badge-done';
+  document.getElementById('dash-table').innerHTML=all.map(m=>`
+    <tr>
+      <td><span style="font-size:10px;background:rgba(139,92,246,.1);color:var(--p3);padding:2px 7px;border-radius:3px;font-weight:700">${m.league||'—'}</span></td>
+      <td style="font-weight:600">${m.home||'—'} vs ${m.away||'—'}</td>
+      <td style="color:var(--text2)">${m.time||'—'}</td>
+      <td><span class="badge ${bc(m.status)}">${m.status||'—'}</span></td>
+      <td>${m.prediction?`<span style="color:var(--green);font-weight:700">${m.prediction}</span>`:'—'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="editMatchById('${m.id}')">编辑</button></td>
+    </tr>`).join('') || `<tr><td colspan="6" class="empty-state">暂无赛事</td></tr>`;
+}
+
+window.editMatchById=id=>{
+  const all=[..._M,..._BM];
+  const m=all.find(r=>r.id===id);if(!m)return;
+  _editMatchId=id;_matchType=m.sport||'football';
+  document.getElementById('match-modal-title').textContent='编辑赛事';
+  sv('m-league',m.league);sv('m-round',m.round);sv('m-home',m.home);sv('m-away',m.away);
+  // 回填日期和时间
+  if(m.date){ sv('m-date', m.date); }
+  if(m.time){ sv('m-time-pick', m.time); sv('m-time', m.time); }
+  sv('m-score',m.score);sv('m-minute',m.minute);
+  sv('m-hf',(m.hf||[]).join(' '));sv('m-af',(m.af||[]).join(' '));
+  sv('m-prediction',m.prediction);sv('m-confidence',m.confidence);
+  sv('m-winPct',m.winPct);sv('m-drawPct',m.drawPct);
+  document.getElementById('m-status').value=m.status||'未开赛';
+  document.getElementById('m-hc').value=m.hc||'#8b5cf6';
+  document.getElementById('m-ac').value=m.ac||'#3b82f6';
+  document.getElementById('modal-match').classList.add('open');
+};
+
+window.deleteMatchById=async(id,name)=>{
+  if(!confirm(`确定删除「${name}」吗？`))return;
+  await deleteDoc(doc(db,'matches',id));
+  toast('已删除','ok');loadMatches();
+};
+
+window.saveMatch=async()=>{
+  const data={
+    sport:_matchType,
+    league:g('m-league').trim(),round:g('m-round').trim(),
+    home:g('m-home').trim(),away:g('m-away').trim(),
+    date:g('m-date').trim(),time:g('m-time').trim()||g('m-time-pick').trim(),status:g('m-status'),
+    score:g('m-score').trim(),minute:g('m-minute').trim(),
+    hc:g('m-hc'),ac:g('m-ac'),
+    hf:g('m-hf').toUpperCase().split(/\s+/).filter(Boolean),
+    af:g('m-af').toUpperCase().split(/\s+/).filter(Boolean),
+    prediction:g('m-prediction').trim(),
+    confidence:parseInt(g('m-confidence'))||0,
+    winPct:parseInt(g('m-winPct'))||0,
+    drawPct:parseInt(g('m-drawPct'))||0,
+  };
+  if(!data.home||!data.away||!data.league){toast('请填写联赛、主队、客队','err');return;}
+  try{
+    if(_editMatchId){await updateDoc(doc(db,'matches',_editMatchId),data);toast('赛事已更新','ok');}
+    else{await addDoc(collection(db,'matches'),{...data,createdAt:serverTimestamp()});toast('赛事已添加','ok');}
+    document.getElementById('modal-match').classList.remove('open');
+    _editMatchId=null;loadMatches();
+  }catch(e){toast('操作失败: '+e.message,'err');}
+};
+
+/* ── Live push ── */
+function renderLivePush(liveMatches){
+  const el=document.getElementById('live-push-list');
+  if(!liveMatches.length){el.innerHTML='<div class="empty-state"><div>🔴</div>暂无直播赛事</div>';return;}
+  el.innerHTML=liveMatches.map(m=>`
+    <div class="live-push-card">
+      <div class="lp-match"><span class="badge badge-live">🔴 直播中</span>${m.home||'—'} vs ${m.away||'—'} · ${m.league||''}</div>
+      <div class="lp-form">
+        <div class="form-field">
+          <label class="fl">当前比分</label>
+          <input class="fi" id="lp-score-${m.id}" value="${m.score||''}" placeholder="如：1-0">
+        </div>
+        <div class="form-field">
+          <label class="fl">比赛分钟</label>
+          <input class="fi lp-minute" id="lp-min-${m.id}" type="number" value="${m.minute||''}" placeholder="64">
+        </div>
+        <div class="form-field" style="justify-content:flex-end">
+          <label class="fl">&nbsp;</label>
+          <button class="btn btn-grad" onclick="pushLiveScore('${m.id}')">🔴 推送更新</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+window.pushLiveScore=async(id)=>{
+  const score=document.getElementById(`lp-score-${id}`)?.value.trim();
+  const minute=document.getElementById(`lp-min-${id}`)?.value.trim();
+  if(!score){toast('请输入比分','err');return;}
+  try{
+    await updateDoc(doc(db,'matches',id),{score,minute,updatedAt:serverTimestamp()});
+    toast(`✓ 比分已推送：${score}（${minute}'）`,'ok');
+    loadMatches();
+  }catch(e){toast('推送失败: '+e.message,'err');}
+};
+
+/* ════ ODDS ════ */
+let _O=[], _editOddsId=null;
+
+async function loadOdds(){
+  const snap=await getDocs(query(collection(db,'odds'),orderBy('createdAt','desc')));
+  _O=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const chg=c=>c==='up'?'↑':c==='dn'?'↓':'—';
+  const tbody=document.getElementById('odds-tbody');
+  if(!_O.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state"><div>📊</div>暂无赔率</td></tr>';return;}
+  tbody.innerHTML=_O.map(o=>`
+    <tr>
+      <td style="font-weight:600">${o.home||'—'} vs ${o.away||'—'}</td>
+      <td><span style="font-size:10px;background:rgba(139,92,246,.1);color:var(--p3);padding:2px 7px;border-radius:3px;font-weight:700">${o.league||'—'}</span></td>
+      <td style="font-weight:700;color:var(--p4)">${o.win||'—'} <span style="font-size:10px;color:${o.wchg==='up'?'var(--red)':o.wchg==='dn'?'var(--green)':'var(--text3)'}">${chg(o.wchg)}</span></td>
+      <td>${o.draw||'—'}</td><td>${o.lose||'—'}</td>
+      <td style="color:var(--text2)">${o.asian||'—'}</td>
+      <td style="color:var(--text2)">${o.ou||'—'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editOddsById('${o.id}')">编辑</button>
+        <button class="btn btn-red btn-sm" onclick="deleteOddsById('${o.id}')">删除</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+window.editOddsById=id=>{
+  const o=_O.find(r=>r.id===id);if(!o)return;
+  _editOddsId=id;
+  document.getElementById('odds-modal-title').textContent='编辑赔率';
+  ['home','away','league','time','win','draw','lose','asian','ou'].forEach(k=>sv('o-'+k,o[k]));
+  document.getElementById('o-wchg').value=o.wchg||'flat';
+  document.getElementById('modal-odds').classList.add('open');
+};
+
+window.deleteOddsById=async id=>{
+  if(!confirm('确定删除这条赔率吗？'))return;
+  await deleteDoc(doc(db,'odds',id));toast('已删除','ok');loadOdds();
+};
+
+window.saveOdds=async()=>{
+  const data={home:g('o-home').trim(),away:g('o-away').trim(),league:g('o-league').trim(),time:g('o-time').trim(),win:g('o-win'),draw:g('o-draw'),lose:g('o-lose'),asian:g('o-asian').trim(),ou:g('o-ou').trim(),wchg:g('o-wchg'),dchg:'flat',lchg:'flat'};
+  if(!data.home||!data.away){toast('请填写主队和客队','err');return;}
+  try{
+    if(_editOddsId){await updateDoc(doc(db,'odds',_editOddsId),data);toast('赔率已更新','ok');}
+    else{await addDoc(collection(db,'odds'),{...data,createdAt:serverTimestamp()});toast('赔率已添加','ok');}
+    document.getElementById('modal-odds').classList.remove('open');
+    _editOddsId=null;loadOdds();
+  }catch(e){toast('操作失败: '+e.message,'err');}
+};
+
+/* ════ NOTICES ════ */
+let _N=[], _editNoticeId=null;
+
+async function loadNotices(){
+  const snap=await getDocs(query(collection(db,'notices'),orderBy('order','asc')));
+  _N=snap.docs.map(d=>({id:d.id,...d.data()}));
+  document.getElementById('s-notices').textContent=_N.length;
+  const preview=document.getElementById('notice-preview-txt');
+  if(preview)preview.textContent=_N.length?_N.map(n=>n.text).join('　｜　'):'暂无公告内容';
+  const el=document.getElementById('notice-list');
+  if(!_N.length){el.innerHTML='<div class="empty-state"><div>🔔</div>暂无公告</div>';return;}
+  el.innerHTML=_N.map(n=>`
+    <div class="notice-item">
+      <span class="notice-order">#${n.order||0}</span>
+      <span class="notice-text">${n.text}</span>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-ghost btn-sm" onclick="editNoticeById('${n.id}')">编辑</button>
+        <button class="btn btn-red btn-sm" onclick="deleteNoticeById('${n.id}')">删除</button>
+      </div>
+    </div>`).join('');
+}
+
+window.editNoticeById=id=>{
+  const n=_N.find(r=>r.id===id);if(!n)return;
+  _editNoticeId=id;
+  document.getElementById('notice-modal-title').textContent='编辑公告';
+  sv('n-text',n.text);sv('n-order',n.order);
+  document.getElementById('modal-notice').classList.add('open');
+};
+
+window.deleteNoticeById=async id=>{
+  if(!confirm('确定删除这条公告吗？'))return;
+  await deleteDoc(doc(db,'notices',id));toast('已删除','ok');loadNotices();
+};
+
+window.saveNotice=async()=>{
+  const text=g('n-text').trim(),order=parseInt(g('n-order'))||0;
+  if(!text){toast('请填写公告内容','err');return;}
+  try{
+    if(_editNoticeId){await updateDoc(doc(db,'notices',_editNoticeId),{text,order});toast('公告已更新','ok');}
+    else{await addDoc(collection(db,'notices'),{text,order,createdAt:serverTimestamp()});toast('公告已发布','ok');}
+    document.getElementById('modal-notice').classList.remove('open');
+    _editNoticeId=null;loadNotices();
+  }catch(e){toast('操作失败: '+e.message,'err');}
+};
+
+/* ════ PREDICTIONS ════ */
+let _P=[];
+
+async function loadPredictions(){
+  const matchId=document.getElementById('pred-filter').value;
+  const q=matchId
+    ?query(collection(db,'predictions'),where('matchId','==',matchId),orderBy('createdAt','desc'),limit(50))
+    :query(collection(db,'predictions'),orderBy('createdAt','desc'),limit(50));
+  const snap=await getDocs(q);
+  _P=snap.docs.map(d=>({id:d.id,...d.data()}));
+  document.getElementById('s-preds').textContent=_P.length;
+  const pendingCnt=_P.filter(p=>p.status!=='approved').length;
+  document.getElementById('pred-badge').textContent=pendingCnt||'';
+  document.getElementById('pred-total').textContent=`共 ${_P.length} 条`;
+  const el=document.getElementById('pred-list');
+  if(!_P.length){el.innerHTML='<div class="empty-state"><div>💬</div>暂无观点数据</div>';return;}
+  el.innerHTML=_P.map(p=>{
+    const approved=p.status==='approved';
+    const statusTag=approved
+      ?`<span style="font-size:10px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:1px 7px;border-radius:10px;font-weight:700">✓ 已通过</span>`
+      :`<span style="font-size:10px;background:#fffbeb;color:#d97706;border:1px solid #fcd34d;padding:1px 7px;border-radius:10px;font-weight:700">⏳ 待审核</span>`;
+    return `<div class="pred-card">
+      <div class="pred-av">${(p.username||'匿').slice(0,1)}</div>
+      <div class="pred-bd">
+        <div class="pred-name">
+          ${p.username||'匿名用户'}
+          ${p.vote?`<span class="pred-vtag">${p.vote}</span>`:''}
+          ${p.matchName?`<span class="pred-mtag">${p.matchName}</span>`:''}
+          ${statusTag}
+        </div>
+        <div class="pred-txt">${p.content}</div>
+        <div class="pred-meta"><span>👍 ${p.likes||0}</span><span>${fmtTs(p.createdAt)}</span></div>
+      </div>
+      <div style="flex-shrink:0;display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+        ${!approved
+          ?`<button class="btn btn-green btn-sm" onclick="approvePredById('${p.id}')">✓ 通过</button>`
+          :`<button class="btn btn-ghost btn-sm" onclick="revokePredById('${p.id}')">撤回</button>`}
+        <button class="btn btn-red btn-sm" onclick="deletePredById('${p.id}')">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.deletePredById=async id=>{
+  if(!confirm('确定删除这条观点？不可恢复。'))return;
+  await deleteDoc(doc(db,'predictions',id));
+  toast('已删除','ok');loadPredictions();
+};
+
+window.approvePredById=async id=>{
+  try{
+    await updateDoc(doc(db,'predictions',id),{status:'approved'});
+    toast('✓ 观点已通过审核','ok');loadPredictions();
+  }catch(e){toast('操作失败: '+e.message,'err');}
+};
+
+window.revokePredById=async id=>{
+  try{
+    await updateDoc(doc(db,'predictions',id),{status:'pending'});
+    toast('已撤回为待审核','ok');loadPredictions();
+  }catch(e){toast('操作失败: '+e.message,'err');}
+};
+
+/* ════ CHARTS ════ */
+let _chartsInit=false;
+function initCharts(){
+  if(_chartsInit)return;_chartsInit=true;
+  const all=[..._M,..._BM];
+  const co={color:'rgba(90,63,160,.3)',gridColor:'rgba(74,52,144,.08)',fontColor:'#5a5480'};
+
+  // Chart 1: preds by day (mock)
+  new Chart(document.getElementById('chart-preds'),{type:'bar',data:{labels:['周一','周二','周三','周四','周五','周六','周日'],datasets:[{label:'观点数',data:[12,18,9,24,31,28,15],backgroundColor:'rgba(139,92,246,.5)',borderColor:'rgba(139,92,246,.8)',borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:co.gridColor},ticks:{color:co.fontColor}},y:{grid:{color:co.gridColor},ticks:{color:co.fontColor}}}}});
+
+  // Chart 2: status
+  const statuses={直播中:0,未开赛:0,完场:0};all.forEach(m=>{if(statuses[m.status]!==undefined)statuses[m.status]++;});
+  new Chart(document.getElementById('chart-status'),{type:'doughnut',data:{labels:Object.keys(statuses),datasets:[{data:Object.values(statuses),backgroundColor:['rgba(244,63,94,.6)','rgba(139,92,246,.6)','rgba(107,95,148,.4)'],borderColor:['var(--red)','var(--p5)','var(--text3)'],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:co.fontColor,font:{size:11}}}}}});
+
+  // Chart 3: leagues
+  const leagues={};all.forEach(m=>{if(m.league)leagues[m.league]=(leagues[m.league]||0)+1;});
+  const sortedL=Object.entries(leagues).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  new Chart(document.getElementById('chart-leagues'),{type:'bar',data:{labels:sortedL.map(e=>e[0]),datasets:[{label:'赛事数',data:sortedL.map(e=>e[1]),backgroundColor:'rgba(99,102,241,.5)',borderColor:'rgba(99,102,241,.8)',borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:co.gridColor},ticks:{color:co.fontColor}},y:{grid:{color:co.gridColor},ticks:{color:co.fontColor}}}}});
+
+  // Chart 4: AI predictions
+  const preds={主胜:0,平局:0,客胜:0,未设置:0};all.forEach(m=>{if(preds[m.prediction]!==undefined)preds[m.prediction]++;else preds['未设置']++;});
+  new Chart(document.getElementById('chart-predictions'),{type:'pie',data:{labels:Object.keys(preds),datasets:[{data:Object.values(preds),backgroundColor:['rgba(16,185,129,.6)','rgba(251,191,36,.6)','rgba(244,63,94,.6)','rgba(107,95,148,.4)'],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:co.fontColor,font:{size:11}}}}}});
+}
+
+/* expose all firebase functions to window */
+window.loadPredictions=loadPredictions;
+window.pushLiveScore=window.pushLiveScore;
+
+/* initial load */
+(async()=>{await loadMatches();await loadOdds();await loadNotices();await loadPredictions();})();
+</script>
+
+<!-- UI logic (regular script) -->
+<script>
+/* ══════════════════════════════════════════
+   多管理员账号配置
+   格式：{ username:'用户名', password:'密码', role:'超级管理员|普通管理员' }
+   超级管理员：拥有所有权限（含删除、添加管理员说明）
+   普通管理员：可添加/编辑赛事，不能删除
+   ══════════════════════════════════════════ */
+const ADMINS = [
+  { username: '超级管理员', password: 'qiuzhen2026', role: 'super' },
+  { username: '管理员2',    password: 'admin2pass',  role: 'normal' },
+  // 继续往下加就行，格式一样 ↑
+];
+
+let _currentAdmin = null;
+
+function doLogin(){
+  const inputUser = document.getElementById('user-inp').value.trim();
+  const inputPass = document.getElementById('pw-inp').value;
+  const matched = ADMINS.find(a => a.username === inputUser && a.password === inputPass);
+  if(matched){
+    _currentAdmin = matched;
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('admin-app').style.display='block';
+    // 显示当前管理员名
+    document.getElementById('admin-name-badge').textContent = matched.username;
+    // 普通管理员隐藏删除按钮（通过CSS）
+    if(matched.role !== 'super'){
+      document.head.insertAdjacentHTML('beforeend','<style>.btn-red{display:none!important}</style>');
+    }
+  } else {
+    document.getElementById('login-err').textContent='用户名或密码错误，请重试';
+    document.getElementById('pw-inp').value='';
+  }
+}
+function setQuickDateTime(daysOffset, timeStr){
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  const dateStr = d.toISOString().slice(0,10);
+  document.getElementById('m-date').value = dateStr;
+  document.getElementById('m-time-pick').value = timeStr;
+  syncTimeField();
+}
+function syncTimeField(){
+  const date = document.getElementById('m-date').value;
+  const time = document.getElementById('m-time-pick').value;
+  const combined = time || '';
+  document.getElementById('m-time').value = combined;
+}
+// sync on any change
+document.addEventListener('change', e => {
+  if(e.target.id === 'm-date' || e.target.id === 'm-time-pick') syncTimeField();
+});
+function doLogout(){
+  if(!confirm('确定退出后台吗？'))return;
+  _currentAdmin = null;
+  document.getElementById('admin-app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('user-inp').value='';
+  document.getElementById('pw-inp').value='';
+}
+
+/* ── NAV ── */
+const PAGE_TITLES={dashboard:'数据概览',matches:'足球赛事管理',basketball:'篮球赛事管理',live:'直播比分推送',odds:'赔率管理',notices:'公告管理',predictions:'球迷观点审核',stats:'数据统计图表'};
+
+function nav(page,el){
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+page).classList.add('on');
+  document.getElementById('topbar-title').textContent=PAGE_TITLES[page]||'';
+  if(page==='stats'&&window.initCharts)window.initCharts();
+}
+window.nav=nav;
+
+/* ── MODALS ── */
+function openMatchModal(type){
+  window._editMatchId=null;
+  window._matchType=type||'football';
+  document.getElementById('match-modal-title').textContent=`添加${type==='basketball'?'篮球':'足球'}赛事`;
+  ['m-league','m-round','m-home','m-away','m-time','m-time-pick','m-date','m-score','m-minute','m-hf','m-af','m-confidence','m-winPct','m-drawPct'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('m-status').value='未开赛';
+  document.getElementById('m-prediction').value='';
+  document.getElementById('m-hc').value='#8b5cf6';
+  document.getElementById('m-ac').value='#3b82f6';
+  // hide AI section for basketball
+  const ai=document.getElementById('ai-section-label');
+  const pr=document.getElementById('form-pred-wrap');
+  if(type==='basketball'){if(ai)ai.style.display='none';if(pr)pr.style.display='none';}
+  else{if(ai)ai.style.display='';if(pr)pr.style.display='';}
+  document.getElementById('modal-match').classList.add('open');
+}
+function openOddsModal(){
+  window._editOddsId=null;
+  document.getElementById('odds-modal-title').textContent='添加赔率';
+  ['o-home','o-away','o-league','o-time','o-win','o-draw','o-lose','o-asian','o-ou'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('o-wchg').value='flat';
+  document.getElementById('modal-odds').classList.add('open');
+}
+function openNoticeModal(){
+  window._editNoticeId=null;
+  document.getElementById('notice-modal-title').textContent='新增公告';
+  document.getElementById('n-text').value='';
+  document.getElementById('n-order').value='0';
+  document.getElementById('modal-notice').classList.add('open');
+}
+function closeMod(id,e){
+  if(e&&e.target!==document.getElementById(id))return;
+  document.getElementById(id).classList.remove('open');
+}
+
+window.openMatchModal=openMatchModal;
+window.openOddsModal=openOddsModal;
+window.openNoticeModal=openNoticeModal;
+window.closeMod=closeMod;
+window.doLogin=doLogin;
+window.doLogout=doLogout;
+window.initCharts=window.initCharts;
+
+/* expose chart init for nav */
+const _origNav=nav;
+window.nav=(page,el)=>{_origNav(page,el);if(page==='stats'&&window.initCharts)setTimeout(window.initCharts,100);};
+</script>
+</body>
+</html>
